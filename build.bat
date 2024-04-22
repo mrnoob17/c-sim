@@ -38,7 +38,7 @@ setlocal ENABLEDELAYEDEXPANSION
     pushd build
 
         @rem Compilation
-        cl %compilerFlags% %ignoreWarnings% -I %includeDirs% ..\src\main.c ..\src\fonts.c ..\src\colors.c ..\src\defs.c -Fe..\%exeName% -link %linkerFlags% ..\lib\*.lib
+        cl %compilerFlags% %ignoreWarnings% -I %includeDirs% ..\src\main.c ..\src\fonts.c ..\src\colors.c ..\src\defs.c ..\src\render_batcher.c -Fe..\%exeName% -link %linkerFlags% ..\lib\*.lib
 
         if %ERRORLEVEL%==0 (
         set "__outputMessage=Build successful"

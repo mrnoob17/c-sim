@@ -14,6 +14,8 @@
 #include "colors.h"
 #include "defs.h"
 #include "fonts.h"
+#include "render_batcher.h"
+
 #include "personalities.c"
 #include "seed.c"
 
@@ -472,10 +474,6 @@ bool entity_under_mouse(RenderContext *render_context, int entity_id, MouseState
 void init() {
   srand(create_seed("ATHANO_LOVES_CHAT_OWO"));
 
-   //this seems to be faster but crashes sometimes ?
-  //SDL_SetHint(SDL_HINT_RENDER_BATCHING, "1");
-  //SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
-
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
     fprintf(stderr, "could not initialize sdl2: %s\n", SDL_GetError());
     exit(1);
@@ -572,6 +570,11 @@ int main(int argc, char *args[]) {
           }
   };
 
+  if (!render_context.renderer) {
+    fprintf(stderr, "could not create renderer: %s\n", SDL_GetError());
+    return 1;
+  }
+
   init_japanese_character_sets(HIRAGANA_BIT | KATAKANA_BIT);
 
   init_latin_character_sets(BASIC_LATIN_BIT | LATIN_ONE_SUPPLEMENT_BIT);
@@ -585,14 +588,6 @@ int main(int argc, char *args[]) {
   render_context.fonts[0] = load_font("assets/OpenSans-Regular.ttf", font_parameters);
   font_parameters.size = 32;
   render_context.fonts[1] = load_font("assets/OpenSans-Regular.ttf", font_parameters);
-
-  font_parameters.size = 1000;
-  Font test_font = load_font("assets/OpenSans-Regular.ttf", font_parameters);
-
-  if (!render_context.renderer) {
-    fprintf(stderr, "could not create renderer: %s\n", SDL_GetError());
-    return 1;
-  }
 
   Entity__create(&render_context, "pushqrdx");
   Entity__create(&render_context, "Athano");
@@ -747,64 +742,60 @@ int main(int argc, char *args[]) {
       }
 
       // Two loops needed so we can have a case where multiple entities can be hovered over, but only one can be selected
-      reverse_entity_loop(entity_i) {
-        game_context.hovered[entity_i] = entity_under_mouse(&render_context, entity_i, &mouse_state);
-      }
+      //reverse_entity_loop(entity_i) {
+      //  game_context.hovered[entity_i] = entity_under_mouse(&render_context, entity_i, &mouse_state);
+      //}
 
-      reverse_entity_loop(entity_i) {
-        if (entity_under_mouse(&render_context, entity_i, &mouse_state)) {
-          if (mouse_state.button == SDL_BUTTON_LEFT && mouse_state.state == SDL_PRESSED && mouse_state.prev_state == SDL_RELEASED) {
-            game_context.selected[entity_i] = !game_context.selected[entity_i];
-            log_entity_personalities(entity_i);
-            break;
-          }
-        }
-      }
+      //reverse_entity_loop(entity_i) {
+      //  if (entity_under_mouse(&render_context, entity_i, &mouse_state)) {
+      //    if (mouse_state.button == SDL_BUTTON_LEFT && mouse_state.state == SDL_PRESSED && mouse_state.prev_state == SDL_RELEASED) {
+      //      game_context.selected[entity_i] = !game_context.selected[entity_i];
+      //      log_entity_personalities(entity_i);
+      //      break;
+      //    }
+      //  }
+      //}
     }
 
     mouse_control_camera(&render_context, &mouse_state);
 
     keyboard_control_camera(&render_context);
 
-    if (mouse_primary_pressed(mouse_state)) {
-      select_entities_within_selection_rect(&render_context, &mouse_state);
-    } else {
-      camera_follow_entity(&render_context);
-    }
+    //if (mouse_primary_pressed(mouse_state)) {
+    //  select_entities_within_selection_rect(&render_context, &mouse_state);
+    //} else {
+    //  camera_follow_entity(&render_context);
+    //}
 
-    // Spring the selection box
-    render_context.selection.position.x = Spring__update(&render_context.selection.spring_x, render_context.selection.target.x);
-    render_context.selection.position.y = Spring__update(&render_context.selection.spring_y, render_context.selection.target.y);
+    //// Spring the selection box
+    //render_context.selection.position.x = Spring__update(&render_context.selection.spring_x, render_context.selection.target.x);
+    //render_context.selection.position.y = Spring__update(&render_context.selection.spring_y, render_context.selection.target.y);
 
-    // Spring the camera position
-    render_context.camera.rect.x = Spring__update(&render_context.camera.pan_spring_x, render_context.camera.target.x);
-    render_context.camera.rect.y = Spring__update(&render_context.camera.pan_spring_y, render_context.camera.target.y);
+    //// Spring the camera position
+    //render_context.camera.rect.x = Spring__update(&render_context.camera.pan_spring_x, render_context.camera.target.x);
+    //render_context.camera.rect.y = Spring__update(&render_context.camera.pan_spring_y, render_context.camera.target.y);
 
     clear_screen(&render_context);
 
     draw_grid(&render_context);
 
-    entity_loop(entity_i) {
-      update_entity(&render_context, entity_i);
-      render_entity(&render_context, entity_i);
-    }
+    //entity_loop(entity_i) {
+    //  update_entity(&render_context, entity_i);
+    //  render_entity(&render_context, entity_i);
+    //}
 
-    if (render_context.camera.zoom > 0.5f) {
-      entity_loop(entity_i) {
-        draw_entity_name(&render_context, entity_i);
-      }
-    }
+    //if (render_context.camera.zoom > 0.5f) {
+    //  entity_loop(entity_i) {
+    //    draw_entity_name(&render_context, entity_i);
+    //  }
+    //}
 
-    if (mouse_primary_pressed(mouse_state)) {
-      // Draw the selection box
-      draw_selection_box(&render_context, &mouse_state);
-    }
+    //if (mouse_primary_pressed(mouse_state)) {
+    //  // Draw the selection box
+    //  draw_selection_box(&render_context, &mouse_state);
+    //}
 
-    render_debug_info(&render_context, &mouse_state);
-
-    const char *text = "BIG FUCK TEXT!";
-
-    draw_text_utf8(text, (FPoint){mouse_state.position.x, mouse_state.position.y}, (RGBA){1, 0, 1, 1}, &test_font);
+    //render_debug_info(&render_context, &mouse_state);
 
     // swedish_text_color = hsv_to_rgb((HSV){.h = (sinf(current_time * 0.0005f) * 0.5f + 0.5f) * 360.0f, .s = 1.0f, .v = 1.0f});
 
@@ -819,7 +810,7 @@ int main(int argc, char *args[]) {
     //     },
     //     &test_font
     // );
-
+    
     SDL_RenderPresent(render_context.renderer);
   }
 
